@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToDo App</title>
+  </head>
+  <body>
+    Todo title
+    <input type="text" id="title" />
+    <br />
+    Todo description
+    <input type text id="description" />
+    <br />
+    <button onclick="onPress()">add todo</button>
+
+    <div id="todos-container"></div>
+
+    <script>
+      let currentTodos = [];
+
+      // function deleteTodo(id) {
+      //   fetch(`http://localhost:3000/todos/${id}`, {
+      //     method: "DELETE",
+      //   })
+      //     .then((res) => {
+      //       if (res.ok) {
+      //         const todosContainer = document.getElementById("todos-container");
+      //         const todoToRemove = document.getElementById(`todo-${id}`);
+      //         if (todoToRemove) {
+      //           todosContainer.removeChild(todoToRemove);
+      //           console.log(`Todo with ID ${id} deleted successfully.`);
+      //         }
+      //       } else {
+      //         console.error("Failed to delete the todo:");
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.error("Error deleting todo:", error);
+      //     });
+      // }
+
+      function createDomElements(prevData, data) {
+        const todosContainer = document.getElementById("todos-container");
+        todosContainer.innerHTML = "";
+
+        for (let i = 0; i < data.length; i++) {
+          const parentEl = document.createElement("div");
+          parentEl.setAttribute("id", `todo-${data[i].id}`);
+
+          const childEl1 = document.createElement("span");
+          childEl1.textContent = `${data[i].title} : `;
+
+          const childEl2 = document.createElement("span");
+          childEl2.textContent = `${data[i].description} `;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.setAttribute("onclick", "deleteTodo(" + data[i].id + ")");
+
+          parentEl.appendChild(childEl1);
+          parentEl.appendChild(childEl2);
+          parentEl.appendChild(deleteBtn);
+          todosContainer.appendChild(parentEl);
+        }
+      }
+
+      // function loadTodos() {}
+
+      function onPress() {
+        const title = document.getElementById("title");
+        const description = document.getElementById("description");
+        fetch("http://localhost:3000/todos", {
+          method: "POST",
+          body: JSON.stringify({
+            title: title.value,
+            description: description.value,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            title.value = "";
+            description.value = "";
+            createDomElements(currentTodos, data);
+            currentTodos = data;
+          });
+      }
+
+      window.setInterval(() => {
+        let todos = [];
+        fetch("http://localhost:3000/todos", {
+          method: "GET",
+        }).then((res) => {
+          res.json().then((data) => {
+            todos = data;
+            createDomElements(currentTodos, todos);
+            currentTodos = todos;
+          });
+        });
+      }, 1000);
+
+      // loadTodos(); // Call loadTodos when the page loads.
+    </script>
+  </body>
+</html>
